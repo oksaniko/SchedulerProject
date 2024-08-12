@@ -26,6 +26,6 @@ public class ScheduleEntity {
     private ZonedDateTime creationDate;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
-    private List<PeriodEntity> periods;
+    private List<TimetableEntity> timetables;
 
 }

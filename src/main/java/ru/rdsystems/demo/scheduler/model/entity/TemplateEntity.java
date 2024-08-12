@@ -3,7 +3,7 @@ package ru.rdsystems.demo.scheduler.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Entity
@@ -20,7 +20,7 @@ public class TemplateEntity {
     private String id;
 
     @Column(name = "creation_date", nullable = false)
-    private Timestamp creationDate;
+    private ZonedDateTime creationDate;
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL)
     private List<SlotEntity> slots;

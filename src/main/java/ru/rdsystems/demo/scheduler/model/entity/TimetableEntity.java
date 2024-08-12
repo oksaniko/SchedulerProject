@@ -10,8 +10,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Table(name = "periods")
-public class PeriodEntity {
+@Table(name = "timetables")
+public class TimetableEntity {
 
     @Id
     @Column(length = 32, nullable = false)

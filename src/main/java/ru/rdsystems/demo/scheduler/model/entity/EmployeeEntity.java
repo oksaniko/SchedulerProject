@@ -1,5 +1,6 @@
 package ru.rdsystems.demo.scheduler.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -29,10 +30,10 @@ public class EmployeeEntity {
     private EmployeePosition position;
 
     @OneToMany(mappedBy = "administrator")
-    private List<PeriodEntity> periodsForAdmin;
+    private List<TimetableEntity> timetableForAdmin;
 
     @OneToMany(mappedBy = "executor")
-    private List<PeriodEntity> periodsForExecute;
+    private List<TimetableEntity> timetablesForExecute;
 
     public enum EmployeeStatus {
         WORKING, TRIAL, TIME_OFF, DISMISSED

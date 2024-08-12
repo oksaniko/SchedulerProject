@@ -6,4 +6,5 @@ import ru.rdsystems.demo.scheduler.model.entity.TemplateEntity;
 
 @Repository
 public interface TemplateRepository extends JpaRepository<TemplateEntity, String> {
+
 }
