@@ -10,10 +10,7 @@ import ru.rdsystems.demo.scheduler.model.entity.TimetableEntity;
 import ru.rdsystems.demo.scheduler.repository.TimetableRepository;
 
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +56,7 @@ public class TimetableService {
 
 	public TimetableEntity getById(String id){
 		return repository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Период (id = " + id + ") не найден"));
+				.orElseThrow(() -> new EntityNotFoundException("Расписание (id = " + id + ") не найдено"));
 	}
 
 }

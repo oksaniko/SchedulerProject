@@ -9,10 +9,7 @@ import ru.rdsystems.demo.scheduler.repository.ScheduleRepository;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,5 +42,9 @@ public class ScheduleService {
 	public ScheduleEntity getByName(String name){
 		return repository.findFirstByName(name)
 				.orElseThrow(() -> new EntityNotFoundException("Расписание с именем " + name + " не найдено"));
+	}
+
+	public List<Map<String, Object>> getScheduleInfo(String id, String name){
+		return repository.getScheduleInfo(id, name);
 	}
 }
