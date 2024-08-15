@@ -2,6 +2,9 @@ package ru.rdsystems.demo.scheduler.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rdsystems.demo.scheduler.model.entity.EmployeeEntity;
@@ -20,18 +23,22 @@ public class TimetableService {
 	private final ScheduleService scheduleService;
 	private final EmployeeService employeeService;
 
+	private TimetableEntity.SlotType getSlotTypeByStr(String typeStr){
+		TimetableEntity.SlotType slotType;
+		try {
+			slotType = TimetableEntity.SlotType.valueOf(typeStr);
+		} catch (IllegalArgumentException ia){
+			throw new IllegalArgumentException("Тип слота " + typeStr + " не определен в справочнике");
+		}
+		return slotType;
+	}
+
 	@Transactional
 	public Optional<TimetableEntity> createTimetable(String scheduleName, String slotTypeStr,
 													 LocalTime slotBegTime, LocalTime slotEndTime, String adminId,
 													 String executorName, List<String> errorList){
 		TimetableEntity timetable = null;
-		TimetableEntity.SlotType slotType;
 		try {
-			try {
-				slotType = TimetableEntity.SlotType.valueOf(slotTypeStr);
-			} catch (IllegalArgumentException ia){
-				throw new IllegalArgumentException("Тип слота " + slotTypeStr + " не определен в справочнике");
-			}
 			ScheduleEntity schedule = scheduleService.getByName(scheduleName);
 			EmployeeEntity admin = employeeService.getAdminById(adminId)
 					.orElseThrow(() -> new EntityNotFoundException("Администратор (id = " + adminId + ") не найден"));
@@ -44,7 +51,7 @@ public class TimetableService {
 			timetable = new TimetableEntity(
 					UUID.randomUUID().toString().replace("-","").toLowerCase(Locale.ROOT),
 					slotService.getByBegEndTime(slotBegTime, slotEndTime),
-					schedule, slotType, admin,
+					schedule, getSlotTypeByStr(slotTypeStr), admin,
 					executor.equals(admin) ? null : executor
 			);
 			repository.save(timetable);
@@ -57,6 +64,49 @@ public class TimetableService {
 	public TimetableEntity getById(String id){
 		return repository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Расписание (id = " + id + ") не найдено"));
+	}
+
+	private Specification<TimetableEntity> getSpecification(TimetableFilter filter){
+		Specification<TimetableEntity> resultSpecification = Specification.allOf();
+		List<Specification<TimetableEntity>> predicate = new ArrayList<>();
+		if(filter != null) {
+			if(filter.getId() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), filter.getId()));
+			if(filter.getSlotId() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("slot"),
+						slotService.getById(filter.getSlotId())));
+			if(filter.getScheduleId() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("schedule"),
+						scheduleService.getById(filter.getScheduleId())));
+			if(filter.getSlotType() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("slotType"),
+						getSlotTypeByStr(filter.getSlotType())));
+			if(filter.getAdministratorId() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("administrator"),
+						employeeService.getById(filter.getAdministratorId())));
+			if(filter.getExecutorId() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("executor"),
+						employeeService.getById(filter.getExecutorId())));
+			resultSpecification = Specification.allOf(predicate);
+		}
+		return resultSpecification;
+	}
+
+	public Map<String, Object> getTimetablesForFilters(TimetableFilter filter,
+													   Sort sort, Integer page, Integer size)	{
+		Map<String, Object> resultSet;
+		if(page != null && size != null){
+			if(sort != null)
+				resultSet = Map.of("timetables", repository.findAll(
+						getSpecification(filter), PageRequest.of(page, size, sort)));
+			else
+				resultSet = Map.of("timetables", repository.findAll(
+						getSpecification(filter), PageRequest.of(page, size)));
+		} else if(sort != null)
+			resultSet = Map.of("timetables", repository.findAll(getSpecification(filter), sort));
+		else
+			resultSet = Map.of("timetables", repository.findAll(getSpecification(filter)));
+		return resultSet;
 	}
 
 }
