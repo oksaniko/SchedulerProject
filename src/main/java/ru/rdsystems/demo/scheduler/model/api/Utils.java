@@ -3,8 +3,6 @@ package ru.rdsystems.demo.scheduler.model.api;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 import ru.rdsystems.demo.scheduler.model.entity.EmployeeEntity;
 import ru.rdsystems.demo.scheduler.model.entity.TemplateEntity;
@@ -13,7 +11,6 @@ import ru.rdsystems.demo.scheduler.service.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -124,21 +121,6 @@ public class Utils {
 				"Сокращенный рабочий день", "LOCAL",
 				LocalTime.of(14, 0), LocalTime.of(17, 0), admin.getId(), "s.sidorov", errorList);*/
 		System.out.println(errorList);
-	}
-
-	public Sort getSortByMap(Map<String, String> sortMap){
-		Sort resultSort = null;
-		if (sortMap != null && !sortMap.isEmpty()) {
-			try{
-				Sort.Direction direction = Sort.Direction.valueOf(sortMap.get("direction").toUpperCase());
-				resultSort = Sort.by(direction, sortMap.get("field"));
-			} catch (IllegalArgumentException ia){
-				throw new IllegalArgumentException("Направление сортировки " + sortMap.get("direction") + " не определено");
-			} catch (PropertyReferenceException pe){
-				throw new RuntimeException("Поле " + sortMap.get("field") + " не найдено в классе периодов расписаний");
-			}
-		}
-		return resultSort;
 	}
 
 }

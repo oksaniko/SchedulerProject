@@ -1,8 +1,8 @@
 package ru.rdsystems.demo.scheduler.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jdk.jshell.execution.Util;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +14,14 @@ import ru.rdsystems.demo.scheduler.service.ScheduleService;
 import ru.rdsystems.demo.scheduler.service.TimetableFilter;
 import ru.rdsystems.demo.scheduler.service.TimetableService;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class GetController {
+public class InfoController {
 
     private final EmployeeRepository employeeRepo;
     private final ScheduleRepository scheduleRepo;
@@ -62,6 +64,22 @@ public class GetController {
         return response;
     }
 
+    private Sort getSortByMap(Map<String, String> sortMap){
+        Sort resultSort = null;
+        if (sortMap != null && !sortMap.isEmpty()) {
+            try{
+                Sort.Direction direction = Sort.Direction.valueOf(sortMap.get("direction").toUpperCase());
+                StringBuilder field = new StringBuilder(sortMap.get("field"));
+                if(field.toString().equals("beginTime") || field.toString().equals("endTime"))
+                    field.insert(0, "slot.");
+                resultSort = Sort.by(direction, field.toString());
+            } catch (IllegalArgumentException ia){
+                throw new IllegalArgumentException("Направление сортировки " + sortMap.get("direction") + " не определено");
+            }
+        }
+        return resultSort;
+    }
+
     @PostMapping("/getTimetableForFilters")
     public ResponseEntity<Map<String, Object>> getTimetableForFilters(
             @RequestBody Map<String, Object> bodyData
@@ -72,6 +90,7 @@ public class GetController {
             Map<String, Object> filterMap = mapper.convertValue(bodyData.get("filter"), Map.class);
             TimetableFilter filter = new TimetableFilter();
             if(filterMap != null && !filterMap.isEmpty()){
+                DateTimeFormatter parserTime = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
                 for (String key : filterMap.keySet()) {
                     if (key.equals("id"))
                         filter.setId(filterMap.get("id").toString());
@@ -85,6 +104,10 @@ public class GetController {
                         filter.setAdministratorId(filterMap.get("administratorId").toString());
                     if (key.equals("executorId"))
                         filter.setExecutorId(filterMap.get("executorId").toString());
+                    if (key.equals("beginTime"))
+                        filter.setBeginTime(LocalTime.parse(filterMap.get("beginTime").toString(), parserTime));
+                    if (key.equals("endTime"))
+                        filter.setEndTime(LocalTime.parse(filterMap.get("endTime").toString(), parserTime));
                 }
             }
             Map<String, String> sortMap = mapper.convertValue(bodyData.get("sort"), Map.class);
@@ -93,7 +116,7 @@ public class GetController {
                 page = Integer.valueOf(bodyData.get("page").toString());
             if(bodyData.containsKey("size"))
                 size = Integer.valueOf(bodyData.get("size").toString());
-            json = timetableService.getTimetablesForFilters(filter, utils.getSortByMap(sortMap), page, size);
+            json = timetableService.getTimetablesForFilters(filter, getSortByMap(sortMap), page, size);
         } catch (Exception e){
             json = Map.of("error", e.getMessage());
             responseStatus = HttpStatus.NOT_FOUND;

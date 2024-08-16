@@ -89,9 +89,9 @@ public class CreateController {
             @RequestParam("executor") String executorName,
             @RequestHeader("x-current-user") String currentUser
     ){
-        List<String> errorList = new ArrayList<>();
         ResponseEntity<Map<String, Object>> response;
         try{
+            List<String> errorList = new ArrayList<>();
             Optional<TimetableEntity>  timetable = timetableService.createTimetable(scheduleName, slotType,
                     LocalTime.parse(begTime, parserTime), LocalTime.parse(endTime, parserTime),
                     currentUser, executorName, errorList);
@@ -101,9 +101,8 @@ public class CreateController {
                     : ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("errors", errorList));
         } catch (DateTimeException dtEx){
-            errorList.add("Ошибка конвертации параметра: " + dtEx.getMessage());
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("errors", errorList));
+                    .body(Map.of("errors", "Ошибка конвертации параметра: " + dtEx.getMessage()));
         }
         return response;
     }

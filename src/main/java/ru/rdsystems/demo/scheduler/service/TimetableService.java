@@ -87,6 +87,12 @@ public class TimetableService {
 			if(filter.getExecutorId() != null)
 				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("executor"),
 						employeeService.getById(filter.getExecutorId())));
+			if(filter.getBeginTime() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.greaterThan(root.get("slot").get("beginTime"),
+						filter.getBeginTime()));
+			if(filter.getEndTime() != null)
+				predicate.add((root, query, criteriaBuilder) -> criteriaBuilder.lessThan(root.get("slot").get("endTime"),
+						filter.getEndTime()));
 			resultSpecification = Specification.allOf(predicate);
 		}
 		return resultSpecification;

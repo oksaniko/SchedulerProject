@@ -3,6 +3,8 @@ package ru.rdsystems.demo.scheduler.service;
 import lombok.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+
 @Service
 @NoArgsConstructor
 @Getter
@@ -14,4 +16,6 @@ public class TimetableFilter {
 	private String slotType;
 	private String administratorId;
 	private String executorId;
+	private LocalTime beginTime;
+	private LocalTime endTime;
 }
