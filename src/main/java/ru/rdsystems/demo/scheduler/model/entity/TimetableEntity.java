@@ -17,12 +17,12 @@ public class TimetableEntity {
     @Column(length = 32, nullable = false)
     private String id;
 
-    @JsonIgnore
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "slot_id", referencedColumnName = "id")
     private SlotEntity slot;
 
-    @JsonIgnore
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "schedule_id", referencedColumnName = "id")
     private ScheduleEntity schedule;
@@ -31,12 +31,12 @@ public class TimetableEntity {
     @Enumerated(EnumType.STRING)
     private SlotType slotType;
 
-    @JsonIgnore
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "administrator_id", referencedColumnName = "id", nullable = false)
     private EmployeeEntity administrator;
 
-    @JsonIgnore
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "executor_id", referencedColumnName = "id")
     private EmployeeEntity executor;

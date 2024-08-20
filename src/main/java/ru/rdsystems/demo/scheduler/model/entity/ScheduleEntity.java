@@ -1,5 +1,6 @@
 package ru.rdsystems.demo.scheduler.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class ScheduleEntity {
     private ZonedDateTime creationDate;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<TimetableEntity> timetables;
 
 }

@@ -30,9 +30,11 @@ public class EmployeeEntity {
     private EmployeePosition position;
 
     @OneToMany(mappedBy = "administrator")
+    @JsonIgnore
     private List<TimetableEntity> timetableForAdmin;
 
     @OneToMany(mappedBy = "executor")
+    @JsonIgnore
     private List<TimetableEntity> timetablesForExecute;
 
     public enum EmployeeStatus {
