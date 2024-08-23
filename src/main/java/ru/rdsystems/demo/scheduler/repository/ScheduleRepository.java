@@ -16,12 +16,12 @@ public interface ScheduleRepository extends JpaRepository<ScheduleEntity, String
 
 	@Query(value = "select s.schedule_name schedule, st.begin_time, st.end_time, t.slot_type slot, " +
 			"tt.id template, eAdm.employee_name admin, eExec.employee_name executor " +
-			"from schedules s " +
-			"join timetables t on t.schedule_id = s.id " +
-			"join slots st on st.id = t.slot_id " +
-			"join templates tt on tt.id = st.schedule_template_id " +
-			"join employees eAdm on eAdm.id = t.administrator_id " +
-			"left join employees eExec on eExec.id = t.executor_id " +
+			"from {h-schema}schedules s " +
+			"join {h-schema}timetables t on t.schedule_id = s.id " +
+			"join {h-schema}slots st on st.id = t.slot_id " +
+			"join {h-schema}templates tt on tt.id = st.schedule_template_id " +
+			"join {h-schema}employees eAdm on eAdm.id = t.administrator_id " +
+			"left join {h-schema}employees eExec on eExec.id = t.executor_id " +
 			"where ((s.id = :id and :id is not null) or (s.schedule_name = :name and :name is not null)) " +
 			"order by st.begin_time, st.end_time",
 			nativeQuery = true)

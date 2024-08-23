@@ -6,7 +6,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import ru.rdsystems.demo.scheduler.model.entity.EmployeeEntity;
 import ru.rdsystems.demo.scheduler.model.entity.TemplateEntity;
-import ru.rdsystems.demo.scheduler.service.*;
+import ru.rdsystems.demo.scheduler.service.implementations.*;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -16,11 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Utils {
 
-	private final EmployeeService emplService;
-	private final ScheduleService scheduleService;
-	private final TemplateService templService;
-	private final SlotService slotService;
-	private final TimetableService timetableService;
+	private final EmployeeServiceImpl emplService;
+	private final ScheduleServiceImpl scheduleService;
+	private final TemplateServiceImpl templService;
+	private final SlotServiceImpl slotService;
+	private final TimetableServiceImpl timetableService;
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void runAfterStartup(){
@@ -65,17 +65,13 @@ public class Utils {
 				LocalTime.of(13, 0), LocalTime.of(14, 0), errorList);
 
 		timetableService.createTimetable(
-				"Полный рабочий день", "LOCAL",
-				LocalTime.of(9, 0), LocalTime.of(13, 0), admin.getId(), "i.ivanov", errorList);
+				new TimetableCreateField("Полный рабочий день", "LOCAL", LocalTime.of(9, 0), LocalTime.of(13, 0), admin.getId(), "i.ivanov", errorList));
 		timetableService.createTimetable(
-				"Полный рабочий день", "LOCAL",
-				LocalTime.of(14, 0), LocalTime.of(18, 0), admin.getId(), "i.ivanov", errorList);
+				new TimetableCreateField("Полный рабочий день", "LOCAL", LocalTime.of(14, 0), LocalTime.of(18, 0), admin.getId(), "i.ivanov", errorList));
 		timetableService.createTimetable(
-				"Полный рабочий день", "UNDEFINED",
-				LocalTime.of(13, 0), LocalTime.of(14, 0), admin.getId(), "i.ivanov", errorList);
+				new TimetableCreateField("Полный рабочий день", "UNDEFINED", LocalTime.of(13, 0), LocalTime.of(14, 0), admin.getId(), "i.ivanov", errorList));
 		timetableService.createTimetable(
-				"Сокращенный рабочий день", "FROM_HOME",
-				LocalTime.of(9, 0), LocalTime.of(13, 0), admin.getId(), "i.ivanov", errorList);
+				new TimetableCreateField("Сокращенный рабочий день", "FROM_HOME", LocalTime.of(9, 0), LocalTime.of(13, 0), admin.getId(), "i.ivanov", errorList));
 		/*timetableService.createTimetable(
 				"Сокращенный рабочий день", "FROM_HOME",
 				LocalTime.of(14, 0), LocalTime.of(17, 0), admin.getId(), "i.ivanov", errorList);
@@ -84,23 +80,17 @@ public class Utils {
 				LocalTime.of(13, 0), LocalTime.of(14, 0), admin.getId(), "i.ivanov", errorList);*/
 
 		timetableService.createTimetable(
-				"Полный рабочий день", "FROM_HOME",
-				LocalTime.of(8, 0), LocalTime.of(12, 0), admin.getId(), "p.petrov", errorList);
+				new TimetableCreateField("Полный рабочий день", "FROM_HOME", LocalTime.of(8, 0), LocalTime.of(12, 0), admin.getId(), "p.petrov", errorList));
 		timetableService.createTimetable(
-				"Полный рабочий день", "UNDEFINED",
-				LocalTime.of(12, 0), LocalTime.of(13, 0), admin.getId(), "p.petrov", errorList);
+				new TimetableCreateField("Полный рабочий день", "UNDEFINED", LocalTime.of(12, 0), LocalTime.of(13, 0), admin.getId(), "p.petrov", errorList));
 		timetableService.createTimetable(
-				"Полный рабочий день", "FROM_HOME",
-				LocalTime.of(13, 0), LocalTime.of(17, 0), admin.getId(), "p.petrov", errorList);
+				new TimetableCreateField("Полный рабочий день", "FROM_HOME", LocalTime.of(13, 0), LocalTime.of(17, 0), admin.getId(), "p.petrov", errorList));
 		timetableService.createTimetable(
-				"Сокращенный рабочий день", "FROM_HOME",
-				LocalTime.of(8, 0), LocalTime.of(12, 0), admin.getId(), "p.petrov", errorList);
+				new TimetableCreateField("Сокращенный рабочий день", "FROM_HOME", LocalTime.of(8, 0), LocalTime.of(12, 0), admin.getId(), "p.petrov", errorList));
 		timetableService.createTimetable(
-				"Сокращенный рабочий день", "UNDEFINED",
-				LocalTime.of(12, 0), LocalTime.of(13, 0), admin.getId(), "p.petrov", errorList);
+				new TimetableCreateField("Сокращенный рабочий день", "UNDEFINED", LocalTime.of(12, 0), LocalTime.of(13, 0), admin.getId(), "p.petrov", errorList));
 		timetableService.createTimetable(
-				"Сокращенный рабочий день","FROM_HOME",
-				LocalTime.of(13, 0), LocalTime.of(17, 0), admin.getId(), "p.petrov", errorList);
+				new TimetableCreateField("Сокращенный рабочий день", "FROM_HOME", LocalTime.of(13, 0), LocalTime.of(17, 0), admin.getId(), "p.petrov", errorList));
 
 		/*timetableService.createTimetable(
 				"Полный рабочий день", "LOCAL",

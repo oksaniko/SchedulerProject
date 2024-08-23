@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface TimetableRepository extends JpaRepository<TimetableEntity, String>, JpaSpecificationExecutor<TimetableEntity> {
 
-	@Query(value = "select t.* from timetables t join slots s on s.id = t.slot_id " +
+	@Query(value = "select t.* from {h-schema}timetables t join slots s on s.id = t.slot_id " +
 			"where coalesce(t.executor_id, t.administrator_id) = :emplId " +
 			"and t.schedule_id = :scheduleId " +
 			"and s.begin_time < :endTime and s.end_time > :begTime",
