@@ -7,7 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rdsystems.demo.scheduler.model.api.TimetableCreateField;
+import ru.rdsystems.demo.scheduler.model.api.*;
 import ru.rdsystems.demo.scheduler.model.entity.EmployeeEntity;
 import ru.rdsystems.demo.scheduler.model.entity.ScheduleEntity;
 import ru.rdsystems.demo.scheduler.model.entity.TimetableEntity;
@@ -101,54 +101,45 @@ public class TimetableServiceImpl implements TimetableService {
 		return resultSpecification;
 	}
 
-	private Sort getSortByMap(Map<String, String> sortMap){
-		Sort resultSort = null;
-		if (sortMap != null && !sortMap.isEmpty()) {
-			try{
-				Sort.Direction direction = Sort.Direction.valueOf(sortMap.get("direction").toUpperCase());
-				StringBuilder field = new StringBuilder(sortMap.get("field"));
-				if(field.toString().equals("beginTime") || field.toString().equals("endTime"))
-					field.insert(0, "slot.");
-				resultSort = Sort.by(direction, field.toString());
-			} catch (IllegalArgumentException ia){
-				throw new IllegalArgumentException("Направление сортировки " + sortMap.get("direction") + " не определено");
-			}
+	private String getFieldSort(TimetableSortField sortField){
+		switch (sortField){
+			case id:
+				return "id";
+			case slotId:
+				return "slot.id";
+			case scheduleId:
+				return "schedule.id";
+			case slotType:
+				return "slotType";
+			case administratorId:
+				return "administrator.id";
+			case executorId:
+				return "executor.id";
+			case beginTime:
+				return "slot.beginTime";
+			case endTime:
+				return "slot.endTime";
+		}
+		return null;
+	}
+
+	private Sort getSortByJson(TimetableSort sort){
+		Sort resultSort;
+		try{
+			resultSort = Sort.by(sort.getDirection(), getFieldSort(sort.getField()));
+		} catch (IllegalArgumentException ia){
+			throw new IllegalArgumentException("Направление сортировки " + sort.getDirection() + " не определено");
 		}
 		return resultSort;
 	}
 
-	private TimetableFilter createTimeFilter(Map<String, Object> filterMap){
-		TimetableFilter filter = new TimetableFilter();
-		if(filterMap != null && !filterMap.isEmpty()){
-			DateTimeFormatter parserTime = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
-			for (String key : filterMap.keySet()) {
-				if (key.equals("id"))
-					filter.setId(filterMap.get("id").toString());
-				if (key.equals("slotId"))
-					filter.setSlotId(filterMap.get("slotId").toString());
-				if (key.equals("scheduleId"))
-					filter.setScheduleId(filterMap.get("scheduleId").toString());
-				if (key.equals("slotType"))
-					filter.setSlotType(filterMap.get("slotType").toString());
-				if (key.equals("administratorId"))
-					filter.setAdministratorId(filterMap.get("administratorId").toString());
-				if (key.equals("executorId"))
-					filter.setExecutorId(filterMap.get("executorId").toString());
-				if (key.equals("beginTime"))
-					filter.setBeginTime(LocalTime.parse(filterMap.get("beginTime").toString(), parserTime));
-				if (key.equals("endTime"))
-					filter.setEndTime(LocalTime.parse(filterMap.get("endTime").toString(), parserTime));
-			}
-		}
-		return filter;
-	}
-
 	@Override
-	public Map<String, Object> getTimetablesForFilters(Map<String, Object> filterMap,
-													   Map<String, String> sortMap, Integer page, Integer size)	{
+	public Map<String, Object> getTimetablesForFilters(TimetableFilterAndSorting filterAndSorting)	{
 		Map<String, Object> resultSet;
-		Sort sort = getSortByMap(sortMap);
-		Specification<TimetableEntity> specification = getSpecification(createTimeFilter(filterMap));
+		Sort sort = getSortByJson(filterAndSorting.getSort());
+		Integer page = filterAndSorting.getPage();
+		Integer size = filterAndSorting.getSize();
+		Specification<TimetableEntity> specification = getSpecification(filterAndSorting.getFilter());
 		if(page != null && size != null){
 			if(sort != null)
 				resultSet = Map.of("timetables", repository.findAll(

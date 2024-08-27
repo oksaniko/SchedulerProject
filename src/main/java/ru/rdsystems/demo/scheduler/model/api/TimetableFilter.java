@@ -1,4 +1,4 @@
-package ru.rdsystems.demo.scheduler.service.implementations;
+package ru.rdsystems.demo.scheduler.model.api;
 
 import lombok.*;
 import org.springframework.stereotype.Service;

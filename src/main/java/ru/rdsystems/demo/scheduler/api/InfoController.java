@@ -1,11 +1,11 @@
 package ru.rdsystems.demo.scheduler.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.rdsystems.demo.scheduler.model.api.TimetableFilterAndSorting;
 import ru.rdsystems.demo.scheduler.repository.*;
 import ru.rdsystems.demo.scheduler.service.implementations.ScheduleServiceImpl;
 import ru.rdsystems.demo.scheduler.service.implementations.TimetableServiceImpl;
@@ -24,7 +24,6 @@ public class InfoController {
     private final TimetableRepository timetableRepo;
     private final TimetableServiceImpl timetableService;
     private final ScheduleServiceImpl scheduleService;
-    private final ObjectMapper mapper;
 
     @GetMapping("/getDBInfo")
     public ResponseEntity<List<Object>> getDBInfo(){
@@ -59,20 +58,12 @@ public class InfoController {
 
     @PostMapping("/getTimetableForFilters")
     public ResponseEntity<Map<String, Object>> getTimetableForFilters(
-            @RequestBody Map<String, Object> bodyData
+            @RequestBody TimetableFilterAndSorting filterAndSorting
     ){
         Map<String, Object> json;
         HttpStatus responseStatus = HttpStatus.OK;
         try{
-            Integer page = null, size = null;
-            if(bodyData.containsKey("page"))
-                page = Integer.valueOf(bodyData.get("page").toString());
-            if(bodyData.containsKey("size"))
-                size = Integer.valueOf(bodyData.get("size").toString());
-            json = timetableService.getTimetablesForFilters(
-                    mapper.convertValue(bodyData.get("filter"), Map.class),
-                    mapper.convertValue(bodyData.get("sort"), Map.class),
-                    page, size);
+            json = timetableService.getTimetablesForFilters(filterAndSorting);
         } catch (Exception e){
             json = Map.of("error", e.getMessage());
             responseStatus = HttpStatus.NOT_FOUND;
