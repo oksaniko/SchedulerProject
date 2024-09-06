@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.rdsystems.demo.scheduler.model.api.TimetableCreateField;
 import ru.rdsystems.demo.scheduler.model.entity.*;
-import ru.rdsystems.demo.scheduler.service.implementations.*;
+import ru.rdsystems.demo.scheduler.service.*;
 
 import java.time.DateTimeException;
 import java.time.LocalTime;
@@ -20,11 +20,11 @@ import java.util.function.Function;
 @RequestMapping("/api/create")
 public class CreateController {
 
-    private final EmployeeServiceImpl employeeService;
-    private final ScheduleServiceImpl scheduleService;
-    private final TemplateServiceImpl templateService;
-    private final SlotServiceImpl slotService;
-    private final TimetableServiceImpl timetableService;
+    private final EmployeeService employeeService;
+    private final ScheduleService scheduleService;
+    private final TemplateService templateService;
+    private final SlotService slotService;
+    private final TimetableService timetableService;
     DateTimeFormatter parserTime = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
     @PostMapping("/createEmployee")

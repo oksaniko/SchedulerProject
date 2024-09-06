@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.rdsystems.demo.scheduler.model.api.TimetableFilterAndSorting;
 import ru.rdsystems.demo.scheduler.repository.*;
-import ru.rdsystems.demo.scheduler.service.implementations.ScheduleServiceImpl;
-import ru.rdsystems.demo.scheduler.service.implementations.TimetableServiceImpl;
+import ru.rdsystems.demo.scheduler.service.ScheduleService;
+import ru.rdsystems.demo.scheduler.service.TimetableService;
 
 import java.util.*;
 
@@ -22,8 +22,8 @@ public class InfoController {
     private final TemplateRepository templateRepo;
     private final SlotRepository slotRepo;
     private final TimetableRepository timetableRepo;
-    private final TimetableServiceImpl timetableService;
-    private final ScheduleServiceImpl scheduleService;
+    private final TimetableService timetableService;
+    private final ScheduleService scheduleService;
 
     @GetMapping("/getDBInfo")
     public ResponseEntity<List<Object>> getDBInfo(){
