@@ -2,6 +2,7 @@ package ru.rdsystems.demo.scheduler.service.implementations;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,8 +15,6 @@ import ru.rdsystems.demo.scheduler.model.entity.TimetableEntity;
 import ru.rdsystems.demo.scheduler.repository.TimetableRepository;
 import ru.rdsystems.demo.scheduler.service.TimetableService;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -134,18 +133,18 @@ public class TimetableServiceImpl implements TimetableService {
 	}
 
 	@Override
-	public Map<String, Object> getTimetablesForFilters(TimetableFilterAndSorting filterAndSorting)	{
-		Map<String, Object> resultSet;
+	public Page<TimetableEntity> getTimetablesForFilters(TimetableFilterAndSorting filterAndSorting)	{
+		Page<TimetableEntity> resultSet;
 		Sort sort = getSortByJson(filterAndSorting.getSort());
 		Integer page = filterAndSorting.getPage() == null ? 0 : filterAndSorting.getPage();
 		Integer size = filterAndSorting.getSize() == null ? 5 : filterAndSorting.getSize();
 		Specification<TimetableEntity> specification = getSpecification(filterAndSorting.getFilter());
 		if(sort != null)
-			resultSet = Map.of("timetables", repository.findAll(
-				specification, PageRequest.of(page, size, sort)));
+			resultSet = repository.findAll(
+				specification, PageRequest.of(page, size, sort));
 		else
-			resultSet = Map.of("timetables", repository.findAll(
-				specification, PageRequest.of(page, size)));
+			resultSet = repository.findAll(
+				specification, PageRequest.of(page, size));
 		return resultSet;
 	}
 

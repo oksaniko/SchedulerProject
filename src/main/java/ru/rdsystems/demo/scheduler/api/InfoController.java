@@ -63,7 +63,7 @@ public class InfoController {
         Map<String, Object> json;
         HttpStatus responseStatus = HttpStatus.OK;
         try{
-            json = timetableService.getTimetablesForFilters(filterAndSorting);
+            json = Map.of("timetables",timetableService.getTimetablesForFilters(filterAndSorting));
         } catch (Exception e){
             json = Map.of("error", e.getMessage());
             responseStatus = HttpStatus.NOT_FOUND;

@@ -1,5 +1,6 @@
 package ru.rdsystems.demo.scheduler.service;
 
+import org.springframework.data.domain.Page;
 import ru.rdsystems.demo.scheduler.model.api.TimetableCreateField;
 import ru.rdsystems.demo.scheduler.model.api.TimetableFilterAndSorting;
 import ru.rdsystems.demo.scheduler.model.entity.TimetableEntity;
@@ -13,5 +14,5 @@ public interface TimetableService {
 
 	TimetableEntity getById(String id);
 
-	Map<String, Object> getTimetablesForFilters(TimetableFilterAndSorting filterAndSorting);
+	Page<TimetableEntity> getTimetablesForFilters(TimetableFilterAndSorting filterAndSorting);
 }
