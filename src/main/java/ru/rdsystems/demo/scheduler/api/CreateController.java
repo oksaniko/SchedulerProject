@@ -7,8 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.rdsystems.demo.scheduler.model.api.TimetableCreateField;
 import ru.rdsystems.demo.scheduler.model.entity.*;
+import ru.rdsystems.demo.scheduler.model.mappers.*;
+import ru.rdsystems.demo.scheduler.schedulerApi.*;
 import ru.rdsystems.demo.scheduler.service.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.DateTimeException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -17,8 +21,8 @@ import java.util.function.Function;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/create")
-public class CreateController {
+@RequestMapping("/api")
+public class CreateController implements CreateApi {
 
     private final EmployeeService employeeService;
     private final ScheduleService scheduleService;
@@ -27,67 +31,77 @@ public class CreateController {
     private final TimetableService timetableService;
     DateTimeFormatter parserTime = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
 
-    @PostMapping("/createEmployee")
-    public ResponseEntity<Map<String, Object>>  createEmployee(
-            @RequestParam("name") String name,
-            @RequestParam("position") String position
-    ){
+    private final EmployeeMapper employeeMapper;
+    private final TemplateMapper templateMapper;
+    private final ScheduleMapper scheduleMapper;
+    private final SlotMapper slotMapper;
+    private final TimetableMapper timetableMapper;
+
+    @Override
+    public ResponseEntity<Employee> createEmployee(@NotNull @Valid String name, @NotNull @Valid String position) {
         List<String> errorList = new ArrayList<>();
         Optional<EmployeeEntity> optEmployee = employeeService.createEmployee(name, position, errorList);
-        return getResponseWithId(optEmployee, EmployeeEntity::getId, errorList);
+        return optEmployee.isPresent()
+                ? ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                .body(employeeMapper.map(optEmployee.get()))
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                .body(null);
     }
 
-    @PostMapping("/createSchedule")
-    public ResponseEntity<Map<String, Object>>  createSchedule(
-            @RequestParam("name") String name
-    ){
+    @Override
+    public ResponseEntity<CreateSchedule200Response> createSchedule(@NotNull @Valid String name) {
         List<String> errorList = new ArrayList<>();
         Optional<ScheduleEntity> optSchedule = scheduleService.createSchedule(name, errorList);
-        return getResponseWithId(optSchedule, ScheduleEntity::getId, errorList);
+        return optSchedule.isPresent()
+                ? ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                .body(scheduleMapper.map(optSchedule.get()))
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                .body(null);
     }
 
-    @PostMapping("/createTemplate")
-    public ResponseEntity<Map<String, Object>> createTemplate(){
+    @Override
+    public ResponseEntity<CreateSchedule200Response> createTemplate() {
         TemplateEntity template = templateService.createTemplate();
         return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("id", template.getId()));
+                .body(templateMapper.map(template));
     }
 
-    @PostMapping("/createSlot")
-    public ResponseEntity<Map<String, Object>> createSlot(
-            @RequestBody Map<String, String> bodyData
-    ){
+    @Override
+    public ResponseEntity<CreateSchedule200Response> createSlot(@Valid CreateSlotRequest createSlotRequest) {
         List<String> errorList = new ArrayList<>();
         Optional<SlotEntity> slot = slotService.createSlot(
-                bodyData.get("templateId"), LocalTime.parse(bodyData.get("begtime"), parserTime),
-                LocalTime.parse(bodyData.get("endtime"), parserTime), errorList
+                createSlotRequest.getTemplateId(),
+                LocalTime.parse(createSlotRequest.getBegtime(), parserTime),
+                LocalTime.parse(createSlotRequest.getEndtime(), parserTime),
+                errorList
         );
-        return getResponseWithId(slot, SlotEntity::getId, errorList);
+        return slot.isPresent()
+                ? ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                .body(slotMapper.map(slot.get()))
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                .body(null);
     }
 
-    @PostMapping("/createTimetable")
-    public ResponseEntity<Map<String, Object>> createTimetable(
-            @RequestBody Map<String, String> bodyData,
-            @RequestHeader("x-current-user") String currentUser
-    ){
-        ResponseEntity<Map<String, Object>> response;
+    @Override
+    public ResponseEntity<CreateSchedule200Response> createTimetable(@NotNull String xCurrentUser, @Valid CreateTimetableRequest createTimetableRequest) {
+        List<String> errorList = new ArrayList<>();
+        Optional<TimetableEntity> timetable = Optional.empty();
         try{
-            List<String> errorList = new ArrayList<>();
-            String executorName = null;
-            if (bodyData.containsKey("executor"))
-                executorName = bodyData.get("executor");
-            Optional<TimetableEntity>  timetable = timetableService.createTimetable(
+            timetable = timetableService.createTimetable(
                     new TimetableCreateField(
-                            bodyData.get("scheduleName"), bodyData.get("slotType"),
-                            LocalTime.parse(bodyData.get("begtime"), parserTime),
-                            LocalTime.parse(bodyData.get("endtime"), parserTime),
-                            currentUser, executorName, errorList));
-            response = getResponseWithId(timetable, TimetableEntity::getId, errorList);
+                            createTimetableRequest.getScheduleName(),
+                            createTimetableRequest.getSlotType(),
+                            LocalTime.parse(createTimetableRequest.getBegtime(), parserTime),
+                            LocalTime.parse(createTimetableRequest.getEndtime(), parserTime),
+                            xCurrentUser, createTimetableRequest.getExecutor(), errorList));
         } catch (DateTimeException dtEx){
-            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("errors", "Ошибка конвертации параметра: " + dtEx.getMessage()));
+            System.out.println("Ошибка конвертации параметра: " + dtEx.getMessage());
         }
-        return response;
+        return timetable.isPresent()
+                ? ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                .body(timetableMapper.map(timetable.get()))
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                .body(null);
     }
 
     private static <T> ResponseEntity<Map<String, Object>> getResponseWithId(
