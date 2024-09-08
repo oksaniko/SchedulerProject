@@ -137,20 +137,15 @@ public class TimetableServiceImpl implements TimetableService {
 	public Map<String, Object> getTimetablesForFilters(TimetableFilterAndSorting filterAndSorting)	{
 		Map<String, Object> resultSet;
 		Sort sort = getSortByJson(filterAndSorting.getSort());
-		Integer page = filterAndSorting.getPage();
-		Integer size = filterAndSorting.getSize();
+		Integer page = filterAndSorting.getPage() == null ? 0 : filterAndSorting.getPage();
+		Integer size = filterAndSorting.getSize() == null ? 5 : filterAndSorting.getSize();
 		Specification<TimetableEntity> specification = getSpecification(filterAndSorting.getFilter());
-		if(page != null && size != null){
-			if(sort != null)
-				resultSet = Map.of("timetables", repository.findAll(
-						specification, PageRequest.of(page, size, sort)));
-			else
-				resultSet = Map.of("timetables", repository.findAll(
-						specification, PageRequest.of(page, size)));
-		} else if(sort != null)
-			resultSet = Map.of("timetables", repository.findAll(specification, sort));
+		if(sort != null)
+			resultSet = Map.of("timetables", repository.findAll(
+				specification, PageRequest.of(page, size, sort)));
 		else
-			resultSet = Map.of("timetables", repository.findAll(specification));
+			resultSet = Map.of("timetables", repository.findAll(
+				specification, PageRequest.of(page, size)));
 		return resultSet;
 	}
 
