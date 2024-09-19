@@ -1,9 +1,13 @@
 package ru.rdsystems.demo.scheduler.service.implementations;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.rdsystems.demo.scheduler.kafka.KafkaProducer;
 import ru.rdsystems.demo.scheduler.model.entity.EmployeeEntity;
 import ru.rdsystems.demo.scheduler.repository.EmployeeRepository;
 import ru.rdsystems.demo.scheduler.service.EmployeeService;
@@ -18,6 +22,10 @@ import java.util.UUID;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository repository;
+    private final KafkaProducer kafkaProducer;
+
+    @Value("${kafka.topic.employee}")
+    private String topicEmployee;
 
     @Override
     @Transactional
@@ -34,11 +42,19 @@ public class EmployeeServiceImpl implements EmployeeService {
                     List.of()
             );
             repository.save(employee);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String message = objectMapper.writeValueAsString(employee);
+            System.out.println("to kafka:" + message);
+            kafkaProducer.sendMessage(topicEmployee, message);
         }
         catch (IllegalArgumentException ex){
             errorList.add("Должность " + positionCode + " отсутствует в справочнике");
-        }
-        return Optional.ofNullable(employee);
+        } catch (JsonProcessingException e) {
+            errorList.add("Ошибка упаковки в json " + e.getMessage());
+			throw new RuntimeException(e);
+		}
+		return Optional.ofNullable(employee);
     }
 
     @Override
